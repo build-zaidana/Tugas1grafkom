@@ -5,7 +5,6 @@ menggunakan **WebGL2 tanpa library**. Gambar referensi ada di `assets/referensi.
 ditampilkan di halaman sebagai `<img>` + link.
 
 Buka `index.html` langsung di browser (tidak perlu server).
-- `node serve.cjs` lalu buka http://127.0.0.1:8091
 
 ## Struktur file
 | File | Isi |
