@@ -1,5 +1,7 @@
 # Tugas Reproduksi Gambar — WebGL2 Murni
 
+**Kelompok:** Adrian Afzal Zaidana (5025241151) — Muhammad Naufal Hadaya Setiawan (5025241181)
+
 Reproduksi digital gambar pemandangan (gunung, matahari, burung, rumah, pohon, jalan, sawah)
 menggunakan **WebGL2 tanpa library**. Gambar referensi ada di `assets/referensi.png` dan
 ditampilkan di halaman sebagai `<img>` + link.

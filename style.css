@@ -25,6 +25,13 @@ header p {
   color: #5b6775;
 }
 
+/* baris nama kelompok */
+header p:first-of-type {
+  margin-bottom: 4px;
+  color: #1d2733;
+  font-weight: 600;
+}
+
 .panels {
   display: grid;
   grid-template-columns: 1fr 1fr;
