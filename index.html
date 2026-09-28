@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reproduksi Gambar — WebGL</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <main class="app">
+    <header>
+      <h1>Reproduksi Gambar Pemandangan</h1>
+      <p>Grafika Komputer — WebGL2 murni (tanpa library)</p>
+    </header>
+
+    <section class="panels">
+      <!-- Hasil reproduksi dengan WebGL -->
+      <figure class="panel">
+        <figcaption>Hasil WebGL (interaktif)</figcaption>
+        <div class="stage">
+          <canvas id="glCanvas" width="1140" height="760"></canvas>
+          <!-- overlay referensi semi-transparan untuk membandingkan kemiripan (tombol O) -->
+          <img id="overlay" src="assets/referensi.png" alt="" />
+        </div>
+      </figure>
+
+      <!-- Gambar referensi (sebagai image + link) -->
+      <figure class="panel">
+        <figcaption>
+          Gambar referensi —
+          <a href="assets/referensi.png" target="_blank">buka gambar</a>
+        </figcaption>
+        <img class="ref" src="assets/referensi.png" alt="Gambar referensi pemandangan gunung, rumah, pohon, dan jalan" />
+      </figure>
+    </section>
+
+    <section id="hud">
+      <div>Arah hadap: <span id="hudFacing">-</span></div>
+      <div>Posisi: <span id="hudPos">-</span></div>
+      <div>Skala: <span id="hudScale">-</span></div>
+      <div>FPS: <span id="hudFps">-</span></div>
+    </section>
+
+    <section class="controls">
+      <!-- tombol arah: tahan untuk berjalan -->
+      <button data-dir="left">◀ Kiri <kbd>←/A</kbd></button>
+      <button data-dir="up">▲ Menjauh <kbd>↑/W</kbd></button>
+      <button data-dir="down">▼ Mendekat <kbd>↓/S</kbd></button>
+      <button data-dir="right">Kanan ▶ <kbd>→/D</kbd></button>
+      <button data-action="reset">Reset posisi <kbd>R</kbd></button>
+      <button data-action="overlay">Overlay referensi <kbd>O</kbd></button>
+    </section>
+
+    <section class="notes">
+      <strong>Objek yang bisa digerakkan:</strong> stickman (bentuk statis) —
+      tahan tombol arah untuk memindahkannya (translasi). Ukurannya mengecil saat menjauh
+      (skala perspektif), dicerminkan saat menghadap kiri (skala-x negatif), dan urutan gambarnya
+      mengikuti kedalaman sehingga bisa lewat di belakang rumah/pohon.
+    </section>
+  </main>
+
+  <!-- Script biasa (bukan module) agar bisa dibuka langsung tanpa server -->
+  <script src="matrix3.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
