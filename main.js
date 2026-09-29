@@ -2,6 +2,7 @@ import {
   Mat3
 } from "./matrix3.js";
 
+// Setup WebGL
 const canvas =
   document.getElementById(
     "glCanvas"
@@ -18,6 +19,7 @@ if (!gl) {
   );
 }
 
+// Shader
 const vertexShaderSource = `#version 300 es
 
 in vec2 a_position;
@@ -55,7 +57,7 @@ void main() {
 }
 `;
 
-// Mengubah teks shader menjadi program GPU
+// Fungsi compile shader
 function createShader(
   gl,
   type,
@@ -98,8 +100,7 @@ function createShader(
   return shader;
 }
 
-
-// Menggabungkan vertex + fragment shader menjadi satu program
+// Fungsi link program
 function createProgram(
   gl,
   vertexShader,
@@ -147,41 +148,36 @@ function createProgram(
   return program;
 }
 
-
 const program = createProgram(
     gl,
   createShader(gl,gl.VERTEX_SHADER, vertexShaderSource),
   createShader(gl,gl.FRAGMENT_SHADER, fragmentShaderSource)
 );
 
-
-// Alamat variabel shader, dipakai untuk mengirim data dari JavaScript
+// Lokasi atribut dan uniform
 const aPosition = gl.getAttribLocation(program, "a_position");
 const uMatrix = gl.getUniformLocation(program, "u_matrix");
 const uColor = gl.getUniformLocation(program, "u_color");
 
-//isi canvas dengan warna kertas 
+// Latar canvas
 gl.viewport(0, 0, canvas.width, canvas.height);
 gl.clearColor(0.97, 0.97, 0.96, 1);
 gl.clear(gl.COLOR_BUFFER_BIT);
 
-
-// ALAT BANTU SEMENTARA: klik gambar referensi → koordinat piksel muncul di Console
+// Alat bantu koordinat
 const refImg = document.querySelector(".ref");
 refImg.addEventListener("click", (e) => {
-  // Gambar tampil diperkecil di halaman, jadi posisi klik dikonversi ke ukuran asli
   const x = Math.round(e.offsetX * refImg.naturalWidth / refImg.clientWidth);
   const y = Math.round(e.offsetY * refImg.naturalHeight / refImg.clientHeight);
   console.log(`${x}, ${y}`);
 });
 
-// Membuat titik-titik lingkaran untuk gl.TRIANGLE_FAN
-// cx, cy = pusat; r = jari-jari; segments = jumlah potongan
+// Fungsi lingkaran
 function circlePoints(cx, cy, r, segments) {
-  const points = [cx, cy]; // titik pertama = pusat kipas
+  const points = [cx, cy];
 
-  for (let i = 0; i <= segments; i++) {           // <= agar titik terakhir menutup lingkaran
-    const a = (i / segments) * Math.PI * 2;        // sudut titik ke-i (radian)
+  for (let i = 0; i <= segments; i++) {
+    const a = (i / segments) * Math.PI * 2;
     points.push(
       cx + Math.cos(a) * r,
       cy + Math.sin(a) * r
@@ -191,55 +187,55 @@ function circlePoints(cx, cy, r, segments) {
   return new Float32Array(points);
 }
 
-
+// Deklarasi objek
 const PROJECTION = Mat3.projection(canvas.width, canvas.height);
 
 const outline = 5;
 
 const langit = new Float32Array([
-  17, 20,      // A
-  1118, 20,    // B
-  1118, 315,   // C
-  17, 315      // D
+  17, 20,
+  1118, 20,
+  1118, 315,
+  17, 315
 ]);
 const matahari = circlePoints(500, 300, 100, 50);
 const matahariOutline = circlePoints(500, 300, 100+outline, 50);
 const rumput = new Float32Array([
-  17, 315,      // A
-  1118, 315,    // B
-  1118,730,     // C
-  17, 730       // D
+  17, 315,
+  1118, 315,
+  1118,730,
+  17, 730
 ]);
 
 const gunungKiriOutline = new Float32Array([
-  26-2*outline, 315+outline/2,      // A
-  300,145-outline,                  // B
-  500+2*outline, 315+outline/2      // C
+  26-2*outline, 315+outline/2,
+  300,145-outline,
+  500+2*outline, 315+outline/2
 ]);
 const gunungKiri = new Float32Array([
-  26, 315,      // A
-  300,145,      // B
-  500, 315      // C
+  26, 315,
+  300,145,
+  500, 315
 ]);
 const gunungKanan = new Float32Array([
-  504, 315,     // A
-  746, 128,     // B
-  1109,315      // C
+  504, 315,
+  746, 128,
+  1109,315
 ]);
 const gunungKananOutline = new Float32Array([
-  504 - 2*outline, 315+outline/2,     // A
-  746 , 128 - outline,                // B
-  1109 + 2*outline,315 + outline/2    // C
+  504 - 2*outline, 315+outline/2,
+  746 , 128 - outline,
+  1109 + 2*outline,315 + outline/2
 ]);
 const jalan = new Float32Array([
-  513, 335,     // A
-  707 , 730,    // B
-  867, 730      // C
+  513, 335,
+  707 , 730,
+  867, 730
 ]);
 const jalanOutline = new Float32Array([
-  500, 315,     // A
-  707-outline , 730,    // B
-  867+outline, 730      // C
+  500, 315,
+  707-outline , 730,
+  867+outline, 730
 ]);
 const shapeRumput = new Float32Array([
   -20, -36,
@@ -257,42 +253,42 @@ const rumputInner = new Float32Array([
    13, 0
 ]);
 const batangPohon = new Float32Array([
-  150, 471, // kiri atas
-  165, 471,   // kanan atas
-  165, 619, // kanan bawah
-  128, 625    // kiri bawah
+  150, 471,
+  165, 471,
+  165, 619,
+  128, 625
 ]);
 const batangPohonOutline = new Float32Array([
-  145, 471, // kiri atas
-  170, 471,   // kanan atas
-  170, 619, // kanan bawah
-  123, 625    // kiri bawah
+  145, 471,
+  170, 471,
+  170, 619,
+  123, 625
 ]);
 
 const daunPohon = circlePoints(0, 0, 50, 60);
 const daunPohonOutline = circlePoints(0, 0, 50+outline, 60);
 const RumahOutline = new Float32Array([
-  388, 542,     // A
-  542, 547,     // B
-  460, 428,     // C
-  297, 420,     //D
-  228, 528,      //E
+  388, 542,
+  542, 547,
+  460, 428,
+  297, 420,
+  228, 528,
   240, 518,
   239, 615,
   395, 640,
   526, 638,
-  528, 542 
+  528, 542
 ]);
 const atapRumahR = new Float32Array([
-  395, 542,     // A
-  459, 434,     // B
-  533, 542      // C
+  395, 542,
+  459, 434,
+  533, 542
 ]);
 const atapRumahL = new Float32Array([
-  390, 541,     // A
-  454, 433,     // C
-  300, 425,     //D
-  238, 524      //E
+  390, 541,
+  454, 433,
+  300, 425,
+  238, 524
 ]);
 const tembokRumahD = new Float32Array([
   400, 635,
@@ -345,22 +341,22 @@ const jendelaS = new Float32Array([
   16-outline, -17+4
 ]);
 const batangLuar = new Float32Array([
-  150, 471, // kiri atas
-  165, 471,   // kanan atas
-  165, 523, // kanan bawah
-  143, 523    // kiri bawah
+  150, 471,
+  165, 471,
+  165, 523,
+  143, 523
 ]);
 const batangLuarOutline = new Float32Array([
-  145, 471, // kiri atas
-  170, 471,   // kanan atas
-  170, 523, // kanan bawah
-  137, 523    // kiri bawah
+  145, 471,
+  170, 471,
+  170, 523,
+  137, 523
 ]);
 const dashJalan = new Float32Array([
-  -2, 0,      // kiri atas
-   2, 0,      // kanan atas
-  30, 40,     // kanan bawah   (28 ke kanan, 40 ke bawah = kemiringan jalan)
-  26, 40      // kiri bawah
+  -2, 0,
+   2, 0,
+  30, 40,
+  26, 40
 ]);
 const shapeBurung = new Float32Array([
   -34,  8,
@@ -378,9 +374,7 @@ const garisMatahari = new Float32Array([
   -2, -50
 ]);
 
-
-
-
+// Fungsi membuat mesh
 function createMesh(vertices) {
   const vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
@@ -395,7 +389,7 @@ function createMesh(vertices) {
   return { vao: vao, count: vertices.length / 2 };
 }
 
-// Gambar satu objek dengan warna tertentu
+// Fungsi gambar
 function drawMesh(mesh, color) {
   gl.bindVertexArray(mesh.vao);
   gl.uniformMatrix3fv(uMatrix, false, PROJECTION);
@@ -437,6 +431,7 @@ function editableMesh(
 
 gl.useProgram(program);
 
+// Posisi objek
 const leafPositions = [
   [150, 450],
   [180, 430],
@@ -483,6 +478,7 @@ const GarisMatahariData = [
   [595, 205,  0.65],
 ];
 
+// Pembuatan mesh
 const meshLangit = createMesh(langit);
 const meshMatahariOutline = createMesh(matahariOutline);
 const meshMatahari = createMesh(matahari);
@@ -517,15 +513,9 @@ const meshDashJalan = createMesh(dashJalan)
 const meshBurung = createMesh(shapeBurung);
 const meshGarisMatahari = createMesh(garisMatahari);
 
-// =====================================================================
-// ANIMASI: matahari naik-turun + warna langit berganti (pagi → malam → pagi)
-// Hanya dua hal yang bergerak: posisi matahari dan warna.
-// =====================================================================
-
-// Lama satu hari penuh (milidetik). Ubah angka ini untuk mempercepat / memperlambat.
+// Animasi
 const DURASI_HARI = 20000;
 
-// Selubung gelap: persegi menutupi seluruh gambar, makin gelap saat malam
 const meshGelap = createMesh(new Float32Array([
   17, 20,
   1118, 20,
@@ -533,74 +523,69 @@ const meshGelap = createMesh(new Float32Array([
   17, 730
 ]));
 
-// Agar warna dengan alpha (transparan) bisa dicampur dengan gambar di belakangnya
 gl.enable(gl.BLEND);
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-// ---------- Daftar warna per waktu ----------
-// Format: [progres hari, [R, G, B, A]]
-// progres 0 = fajar, 0.25 = siang, 0.5 = sore, 0.75 = tengah malam, 1 = fajar lagi
-
+// Warna per waktu
 const WARNA_LANGIT = [
-  [0.00, [0.99, 0.70, 0.50, 1]],     // fajar (oranye)
-  [0.08, [0.678, 0.878, 0.961, 1]],  // pagi (biru muda)
+  [0.00, [0.99, 0.70, 0.50, 1]],  // fajar
+  [0.08, [0.678, 0.878, 0.961, 1]],  // pagi
   [0.40, [0.678, 0.878, 0.961, 1]],  // siang
-  [0.48, [0.98, 0.59, 0.39, 1]],     // sore (oranye)
-  [0.58, [0.30, 0.25, 0.45, 1]],     // senja (ungu)
-  [0.68, [0.10, 0.13, 0.30, 1]],     // malam (biru tua)
-  [0.92, [0.10, 0.13, 0.30, 1]],     // malam
-  [1.00, [0.99, 0.70, 0.50, 1]]      // fajar lagi
+  [0.48, [0.98, 0.59, 0.39, 1]],  // sore
+  [0.58, [0.30, 0.25, 0.45, 1]],  // senja
+  [0.68, [0.10, 0.13, 0.30, 1]],  // malam
+  [0.92, [0.10, 0.13, 0.30, 1]],  // malam
+  [1.00, [0.99, 0.70, 0.50, 1]]  // fajar
 ];
 
 const WARNA_MATAHARI = [
-  [0.00, [1.00, 0.45, 0.20, 1]],     // baru terbit (oranye)
-  [0.10, [0.984, 0.831, 0, 1]],      // kuning
+  [0.00, [1.00, 0.45, 0.20, 1]],  // terbit
+  [0.10, [0.984, 0.831, 0, 1]],  // kuning
   [0.40, [0.984, 0.831, 0, 1]],
-  [0.50, [1.00, 0.45, 0.20, 1]],     // mau terbenam (oranye)
+  [0.50, [1.00, 0.45, 0.20, 1]],  // terbenam
   [1.00, [1.00, 0.45, 0.20, 1]]
 ];
 
-// Warna hitam-biru transparan yang ditumpuk di atas semuanya (nilai terakhir = kegelapan)
 const WARNA_GELAP = [
   [0.00, [0.02, 0.03, 0.15, 0.35]],
-  [0.08, [0.02, 0.03, 0.15, 0.00]],  // siang: tidak gelap
+  [0.08, [0.02, 0.03, 0.15, 0.00]],  // siang
   [0.40, [0.02, 0.03, 0.15, 0.00]],
   [0.48, [0.02, 0.03, 0.15, 0.15]],
   [0.58, [0.02, 0.03, 0.15, 0.40]],
-  [0.68, [0.02, 0.03, 0.15, 0.60]],  // malam: paling gelap
+  [0.68, [0.02, 0.03, 0.15, 0.60]],  // malam
   [0.92, [0.02, 0.03, 0.15, 0.60]],
   [1.00, [0.02, 0.03, 0.15, 0.35]]
 ];
 
-// Mencari warna di antara dua titik warna terdekat (campuran halus)
+// Fungsi pencampur warna
 function warnaPada(progres, daftar) {
   for (let i = 1; i < daftar.length; i++) {
     const [waktuA, warnaA] = daftar[i - 1];
     const [waktuB, warnaB] = daftar[i];
 
     if (progres <= waktuB) {
-      const t = (progres - waktuA) / (waktuB - waktuA);   // 0..1 di antara kedua titik
+      const t = (progres - waktuA) / (waktuB - waktuA);
       return warnaA.map((nilai, k) => nilai + (warnaB[k] - nilai) * t);
     }
   }
   return daftar[daftar.length - 1][1];
 }
 
-// ---------- Pemandangan yang tidak bergerak ----------
+// Fungsi gambar pemandangan
 function gambarPemandangan() {
-  drawMesh(meshRumput, [0.843, 0.914, 0.706, 1]);        // ijo rumput
-  drawMesh(meshGunungKiriOutline, [0, 0, 0, 1]);         // hitam
-  drawMesh(meshGunungKananOutline, [0, 0, 0, 1]);        // hitam
-  drawMesh(meshGunungKiri, [0.557, 0.471, 0.431, 1]);    // coklat
-  drawMesh(meshGunungKanan, [0.557, 0.471, 0.431, 1]);   // coklat
-  drawMesh(meshJalanOutline, [0, 0, 0, 1]);              // hitam
-  drawMesh(meshJalan, [0.792, 0.855, 0.8, 1]);           // ijo jalan
+  drawMesh(meshRumput, [0.843, 0.914, 0.706, 1]);
+  drawMesh(meshGunungKiriOutline, [0, 0, 0, 1]);
+  drawMesh(meshGunungKananOutline, [0, 0, 0, 1]);
+  drawMesh(meshGunungKiri, [0.557, 0.471, 0.431, 1]);
+  drawMesh(meshGunungKanan, [0.557, 0.471, 0.431, 1]);
+  drawMesh(meshJalanOutline, [0, 0, 0, 1]);
+  drawMesh(meshJalan, [0.792, 0.855, 0.8, 1]);
 
-  drawMesh(meshRumahOutline, [0, 0, 0, 1]);              // hitam
-  drawMesh(meshAtapRumahR, [0.831, 0.231, 0.212, 1]);    // merah atap
-  drawMesh(meshAtapRumahL, [0.831, 0.231, 0.212, 1]);    // merah atap
-  drawMesh(meshTembokRumahD, [1, 1, 1, 1]);              // putih
-  drawMesh(meshTembokRumahS, [1, 1, 1, 1]);              // putih
+  drawMesh(meshRumahOutline, [0, 0, 0, 1]);
+  drawMesh(meshAtapRumahR, [0.831, 0.231, 0.212, 1]);
+  drawMesh(meshAtapRumahL, [0.831, 0.231, 0.212, 1]);
+  drawMesh(meshTembokRumahD, [1, 1, 1, 1]);
+  drawMesh(meshTembokRumahS, [1, 1, 1, 1]);
   drawMesh(meshPintuRumahOutline, [0, 0, 0, 1]);
   drawMesh(meshPintuRumah, [0.996, 0.988, 0.792, 1]);
   drawMesh(meshJendelaDOutline, [0, 0, 0, 1]);
@@ -634,46 +619,42 @@ function gambarPemandangan() {
   drawMesh(meshBatangLuar, [0.137, 0.275, 0.094, 1]);
 }
 
-// ---------- Render loop: dipanggil ulang ~60 kali per detik ----------
+// Fungsi animasi
 function render(waktu) {
-  // progres = posisi dalam satu hari (0 sampai 1, lalu mengulang dari 0)
   const progres = (waktu % DURASI_HARI) / DURASI_HARI;
 
-  // Posisi matahari: naik-turun mengikuti gelombang sin
-  //   y = 430 → di bawah horizon (tersembunyi), y = 240 → puncak siang
   const matahariY = 430 - 190 * Math.sin(progres * Math.PI * 2);
 
-  // Bentuk matahari digambar di y = 300, jadi cukup digeser (translasi) sisanya
   const modelMatahari = Mat3.translation(0, matahariY - 300);
 
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  // 1. Langit (warna berganti)
+  // Langit
   drawMesh(meshLangit, warnaPada(progres, WARNA_LANGIT));
 
-  // 2. Matahari: tepi hitam dulu, lalu isi kuning di atasnya
+  // Matahari
   editableMesh(meshMatahariOutline, [0, 0, 0, 1], modelMatahari);
   editableMesh(meshMatahari, warnaPada(progres, WARNA_MATAHARI), modelMatahari);
 
-  // 3. Sinar matahari ikut bergeser bersama matahari (hanya saat matahari di atas horizon)
+  // Sinar matahari
   if (matahariY < 400) {
     for (const [x, y, sudut] of GarisMatahariData) {
       const model = Mat3.multiply(
-        modelMatahari,                                        // geser ke posisi matahari
+        modelMatahari,
         Mat3.multiply(Mat3.translation(x, y), Mat3.rotation(sudut))
       );
       editableMesh(meshGarisMatahari, [0, 0, 0, 1], model);
     }
   }
 
-  // 4. Burung
+  // Burung
   editableMesh(meshBurung, [0, 0, 0, 1], Mat3.translation(913, 87), gl.LINE_STRIP);
   editableMesh(meshBurung, [0, 0, 0, 1], Mat3.translation(1020, 170), gl.LINE_STRIP);
 
-  // 5. Gunung, sawah, jalan, rumah, pohon (menutupi matahari yang sedang terbenam)
+  // Pemandangan
   gambarPemandangan();
 
-  // 6. Selubung gelap di paling atas: makin malam makin pekat
+  // Selubung gelap
   drawMesh(meshGelap, warnaPada(progres, WARNA_GELAP));
 
   requestAnimationFrame(render);
@@ -681,30 +662,26 @@ function render(waktu) {
 
 requestAnimationFrame(render);
 
-// ---------- ALAT BANTU COMPARE: overlay referensi di atas canvas ----------
+// Alat bantu perbandingan
 const overlay = document.getElementById("overlay");
 const opacitySlider = document.getElementById("overlayOpacity");
 const opacityLabel = document.getElementById("overlayValue");
 const diffCheckbox = document.getElementById("overlayDiff");
 
-// Atur transparansi overlay (0 = tak terlihat, 100 = menutupi penuh)
 function setOverlayOpacity(percent) {
   overlay.style.opacity = percent / 100;
   opacitySlider.value = percent;
   opacityLabel.textContent = percent + "%";
 }
 
-// Slider digeser → ubah transparansi
 opacitySlider.addEventListener("input", () => {
   setOverlayOpacity(Number(opacitySlider.value));
 });
 
-// Checkbox → nyalakan/matikan mode difference
 diffCheckbox.addEventListener("change", () => {
   overlay.classList.toggle("diff", diffCheckbox.checked);
 });
 
-// Tombol O → overlay on/off cepat (0% ↔ 50%)
 window.addEventListener("keydown", (e) => {
   if (e.key === "o" || e.key === "O") {
     setOverlayOpacity(Number(opacitySlider.value) > 0 ? 0 : 50);
