@@ -58,14 +58,17 @@ export const Mat3 = {
       b20 * a02 + b21 * a12 + b22 * a22
     ]);
   },
+
   // Proyeksi: piksel (0..width, 0..height, Y ke bawah) → clip space (−1..1, Y ke atas)
-    //   x_clip = x * (2 / width)   - 1
-    //   y_clip = y * (-2 / height) + 1
-    projection(width, height) {
-      return new Float32Array([
-        2 / width, 0,           0,
-        0,         -2 / height, 0,
-        -1,        1,           1
-      ]);
-    },
+  //   x_clip = x * (2 / width)   - 1
+  //   y_clip = y * (-2 / height) + 1
+projection(width, height) {
+    return new Float32Array([
+      2 / width, 0,           0,
+      0,         -2 / height, 0,
+      -1,        1,           1
+    ]);
+ },
 };
+
+

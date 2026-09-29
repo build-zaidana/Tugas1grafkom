@@ -30,7 +30,7 @@
         Adrian Afzal Zaidana (5025241151) - Muhammad Naufal Hadaya Setiawan (5025241181)
       </p>
     </header>
-    <div class="panels">
+    <!-- <div class="panels">
         <canvas
             id="glCanvas"
             width="1140"
@@ -38,14 +38,42 @@
         </canvas>
 
         <img class="ref" src="assets/referensi.png" alt="Gambar referensi" />
-    </div>
-    <div>
-        <p>X: <span class="posX"></span></p>
-        <p>Y: <span class="posY"></span></p>
+    </div> -->
+    
+    
+<!-- ----------------------------------------------------------------------------------------------- -->
+  <div class="panels">
+        <!-- canvas + overlay ditumpuk di dalam .stage -->
+        <div class="stage">
+            <canvas
+                id="glCanvas"
+                width="1140"
+                height="762">
+            </canvas>
+            <img id="overlay" src="assets/referensi.png" alt="" />
+        </div>
+
+        <img class="ref" src="assets/referensi.png" alt="Gambar referensi" />
     </div>
 
+    <!-- kontrol perbandingan -->
+    <section class="controls">
+        <label>
+            Overlay:
+            <input id="overlayOpacity" type="range" min="0" max="100" value="0" />
+            <span id="overlayValue">0%</span>
+        </label>
+        <label>
+            <input id="overlayDiff" type="checkbox" />
+            Mode difference
+        </label>
+        <span>Tombol <b>O</b> = overlay on/off</span>
+        <span>X : <span class="posX"> </span> </span> 
+        <span>Y : <span class="posY"> </span> </span>
+    </section>
+<!-- ---------------------------------------------------------------------------------------------------------- -->
 
-<!--
+<!-- 
     <section id="hud">
       <div>
         Position:
@@ -103,6 +131,7 @@
     type="module"
     src="./main.js">
   </script>
+
 
 </body>
 </html>
