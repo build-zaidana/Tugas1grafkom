@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>
+    Interactive Transformation Playground
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  />
+</head>
+
+<body>
+
+  <main class="app">
+    <header>
+      <h1>
+        Tugas 1 Grafika Komputer
+      </h1>
+
+      <p>
+        Adrian Afzal Zaidana (5025241151) - Muhammad Naufal Hadaya Setiawan (5025241181)
+      </p>
+    </header>
+    <div class="panels">
+        <canvas
+            id="glCanvas"
+            width="1140"
+            height="762">
+        </canvas>
+
+        <img class="ref" src="assets/referensi.png" alt="Gambar referensi" />
+    </div>
+    <div>
+        <p>X: <span class="posX"></span></p>
+        <p>Y: <span class="posY"></span></p>
+    </div>
+
+
+<!--
+    <section id="hud">
+      <div>
+        Position:
+        <span id="positionInfo"></span>
+      </div>
+
+      <div>
+        Rotation:
+        <span id="rotationInfo"></span>
+      </div>
+
+      <div>
+        Scale:
+        <span id="scaleInfo"></span>
+      </div>
+
+      <div>
+        Order:
+        <span id="orderInfo">
+          Scale → Rotate → Translate
+        </span>
+      </div>
+    </section>
+
+    <section class="controls">
+      <strong>Kontrol:</strong>
+
+      <span>
+        Arrow Keys = Move
+      </span>
+
+      <span>
+        Q/E = Rotate
+      </span>
+
+      <span>
+        +/- = Uniform Scale
+      </span>
+
+      <span>
+        Z/X = Scale X
+      </span>
+
+      <span>
+        C/V = Scale Y
+      </span>
+
+      <span>
+        R = Reset
+      </span>
+    </section> -->
+  </main>
+
+  <script
+    type="module"
+    src="./main.js">
+  </script>
+
+</body>
+</html>
