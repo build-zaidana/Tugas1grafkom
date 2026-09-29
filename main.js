@@ -517,145 +517,164 @@ const meshDashJalan = createMesh(dashJalan)
 const meshBurung = createMesh(shapeBurung);
 const meshGarisMatahari = createMesh(garisMatahari);
 
-function render(time = 0) {
+// =====================================================================
+// ANIMASI: matahari naik-turun + warna langit berganti (pagi → malam → pagi)
+// Hanya dua hal yang bergerak: posisi matahari dan warna.
+// =====================================================================
+
+// Lama satu hari penuh (milidetik). Ubah angka ini untuk mempercepat / memperlambat.
+const DURASI_HARI = 20000;
+
+// Selubung gelap: persegi menutupi seluruh gambar, makin gelap saat malam
+const meshGelap = createMesh(new Float32Array([
+  17, 20,
+  1118, 20,
+  1118, 730,
+  17, 730
+]));
+
+// Agar warna dengan alpha (transparan) bisa dicampur dengan gambar di belakangnya
+gl.enable(gl.BLEND);
+gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+// ---------- Daftar warna per waktu ----------
+// Format: [progres hari, [R, G, B, A]]
+// progres 0 = fajar, 0.25 = siang, 0.5 = sore, 0.75 = tengah malam, 1 = fajar lagi
+
+const WARNA_LANGIT = [
+  [0.00, [0.99, 0.70, 0.50, 1]],     // fajar (oranye)
+  [0.08, [0.678, 0.878, 0.961, 1]],  // pagi (biru muda)
+  [0.40, [0.678, 0.878, 0.961, 1]],  // siang
+  [0.48, [0.98, 0.59, 0.39, 1]],     // sore (oranye)
+  [0.58, [0.30, 0.25, 0.45, 1]],     // senja (ungu)
+  [0.68, [0.10, 0.13, 0.30, 1]],     // malam (biru tua)
+  [0.92, [0.10, 0.13, 0.30, 1]],     // malam
+  [1.00, [0.99, 0.70, 0.50, 1]]      // fajar lagi
+];
+
+const WARNA_MATAHARI = [
+  [0.00, [1.00, 0.45, 0.20, 1]],     // baru terbit (oranye)
+  [0.10, [0.984, 0.831, 0, 1]],      // kuning
+  [0.40, [0.984, 0.831, 0, 1]],
+  [0.50, [1.00, 0.45, 0.20, 1]],     // mau terbenam (oranye)
+  [1.00, [1.00, 0.45, 0.20, 1]]
+];
+
+// Warna hitam-biru transparan yang ditumpuk di atas semuanya (nilai terakhir = kegelapan)
+const WARNA_GELAP = [
+  [0.00, [0.02, 0.03, 0.15, 0.35]],
+  [0.08, [0.02, 0.03, 0.15, 0.00]],  // siang: tidak gelap
+  [0.40, [0.02, 0.03, 0.15, 0.00]],
+  [0.48, [0.02, 0.03, 0.15, 0.15]],
+  [0.58, [0.02, 0.03, 0.15, 0.40]],
+  [0.68, [0.02, 0.03, 0.15, 0.60]],  // malam: paling gelap
+  [0.92, [0.02, 0.03, 0.15, 0.60]],
+  [1.00, [0.02, 0.03, 0.15, 0.35]]
+];
+
+// Mencari warna di antara dua titik warna terdekat (campuran halus)
+function warnaPada(progres, daftar) {
+  for (let i = 1; i < daftar.length; i++) {
+    const [waktuA, warnaA] = daftar[i - 1];
+    const [waktuB, warnaB] = daftar[i];
+
+    if (progres <= waktuB) {
+      const t = (progres - waktuA) / (waktuB - waktuA);   // 0..1 di antara kedua titik
+      return warnaA.map((nilai, k) => nilai + (warnaB[k] - nilai) * t);
+    }
+  }
+  return daftar[daftar.length - 1][1];
+}
+
+// ---------- Pemandangan yang tidak bergerak ----------
+function gambarPemandangan() {
+  drawMesh(meshRumput, [0.843, 0.914, 0.706, 1]);        // ijo rumput
+  drawMesh(meshGunungKiriOutline, [0, 0, 0, 1]);         // hitam
+  drawMesh(meshGunungKananOutline, [0, 0, 0, 1]);        // hitam
+  drawMesh(meshGunungKiri, [0.557, 0.471, 0.431, 1]);    // coklat
+  drawMesh(meshGunungKanan, [0.557, 0.471, 0.431, 1]);   // coklat
+  drawMesh(meshJalanOutline, [0, 0, 0, 1]);              // hitam
+  drawMesh(meshJalan, [0.792, 0.855, 0.8, 1]);           // ijo jalan
+
+  drawMesh(meshRumahOutline, [0, 0, 0, 1]);              // hitam
+  drawMesh(meshAtapRumahR, [0.831, 0.231, 0.212, 1]);    // merah atap
+  drawMesh(meshAtapRumahL, [0.831, 0.231, 0.212, 1]);    // merah atap
+  drawMesh(meshTembokRumahD, [1, 1, 1, 1]);              // putih
+  drawMesh(meshTembokRumahS, [1, 1, 1, 1]);              // putih
+  drawMesh(meshPintuRumahOutline, [0, 0, 0, 1]);
+  drawMesh(meshPintuRumah, [0.996, 0.988, 0.792, 1]);
+  drawMesh(meshJendelaDOutline, [0, 0, 0, 1]);
+  drawMesh(meshJendelaD, [0.996, 0.988, 0.792, 1]);
+
+  for (const [x, y] of JendelaPosition) {
+    editableMesh(meshJendelaSOutline, [0, 0, 0, 1], Mat3.translation(x, y));
+    editableMesh(meshJendelaS, [0.996, 0.988, 0.792, 1], Mat3.translation(x, y));
+  }
+
+  for (const [x, y] of grassPositions) {
+    editableMesh(meshRumputOuter, [0, 0, 0, 1], Mat3.translation(x, y), gl.TRIANGLES);
+    editableMesh(meshRumputInner, [0.843, 0.914, 0.706, 1], Mat3.translation(x, y), gl.TRIANGLES);
+  }
+
+  drawMesh(meshBatangPohonOutline, [0, 0, 0, 1]);
+  drawMesh(meshBatangPohon, [0.137, 0.275, 0.094, 1]);
+
+  for (const [x, y] of leafPositions) {
+    editableMesh(meshdaunPohonOutline, [0, 0, 0, 1], Mat3.translation(x, y));
+  }
+  for (const [x, y] of leafPositions) {
+    editableMesh(meshdaunPohon, [0.42, 0.855, 0.271, 1], Mat3.translation(x, y));
+  }
+
+  for (const [x, y] of DashPosition) {
+    editableMesh(meshDashJalan, [0, 0, 0, 1], Mat3.translation(x, y));
+  }
+
+  drawMesh(meshBatangLuarOutline, [0, 0, 0, 1]);
+  drawMesh(meshBatangLuar, [0.137, 0.275, 0.094, 1]);
+}
+
+// ---------- Render loop: dipanggil ulang ~60 kali per detik ----------
+function render(waktu) {
+  // progres = posisi dalam satu hari (0 sampai 1, lalu mengulang dari 0)
+  const progres = (waktu % DURASI_HARI) / DURASI_HARI;
+
+  // Posisi matahari: naik-turun mengikuti gelombang sin
+  //   y = 430 → di bawah horizon (tersembunyi), y = 240 → puncak siang
+  const matahariY = 430 - 190 * Math.sin(progres * Math.PI * 2);
+
+  // Bentuk matahari digambar di y = 300, jadi cukup digeser (translasi) sisanya
+  const modelMatahari = Mat3.translation(0, matahariY - 300);
+
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  // Nilai y positif bergerak ke bawah pada koordinat gambar ini.
-  const sunOffsetY = Math.sin(time * 0.0015) * 28;
-  const rayPulse = 0.82 + (Math.sin(time * 0.004) + 1) * 0.12;
+  // 1. Langit (warna berganti)
+  drawMesh(meshLangit, warnaPada(progres, WARNA_LANGIT));
 
-  drawMesh(meshLangit, [0.678, 0.878, 0.961, 1]);       // biru
-  editableMesh(
-    meshMatahariOutline,
-    [0, 0, 0, 1],
-    Mat3.translation(0, sunOffsetY)
-  ); // hitam
-  editableMesh(
-    meshMatahari,
-    [0.984, 0.831, 0, 1],
-    Mat3.translation(0, sunOffsetY)
-  ); // kuning
-drawMesh(meshRumput, [0.843, 0.914, 0.706, 1])        // ijo rumput
-drawMesh(meshGunungKiriOutline, [0, 0, 0, 1]);        // hitam
-drawMesh(meshGunungKananOutline, [0, 0, 0, 1]);       // hitam
-drawMesh(meshGunungKiri, [0.557, 0.471, 0.431, 1]);   // Coklat
-drawMesh(meshGunungKanan, [0.557, 0.471, 0.431, 1]);  //biru
-drawMesh(meshJalanOutline, [0,0,0,1]);                //hitam
-drawMesh(meshJalan, [0.792, 0.855, 0.8, 1]);          // ijo jalan
-drawMesh(meshRumahOutline, [0,0,0,1]);                // hitam
-drawMesh(meshAtapRumahR, [0.831, 0.231, 0.212 ,1]);   // merah atap
-drawMesh(meshAtapRumahL, [0.831, 0.231, 0.212 ,1]);   // merah atap
-drawMesh(meshTembokRumahD, [1,1,1,1]);                // putih
-drawMesh(meshTembokRumahS, [1,1,1,1]);                // putih
-drawMesh(meshPintuRumahOutline, [0,0,0,1]);
-drawMesh(meshPintuRumah, [0.996, 0.988, 0.792,1]);
-drawMesh(meshJendelaDOutline, [0,0,0,1]);
-drawMesh(meshJendelaD, [0.996, 0.988, 0.792,1]);
+  // 2. Matahari: tepi hitam dulu, lalu isi kuning di atasnya
+  editableMesh(meshMatahariOutline, [0, 0, 0, 1], modelMatahari);
+  editableMesh(meshMatahari, warnaPada(progres, WARNA_MATAHARI), modelMatahari);
 
+  // 3. Sinar matahari ikut bergeser bersama matahari (hanya saat matahari di atas horizon)
+  if (matahariY < 400) {
+    for (const [x, y, sudut] of GarisMatahariData) {
+      const model = Mat3.multiply(
+        modelMatahari,                                        // geser ke posisi matahari
+        Mat3.multiply(Mat3.translation(x, y), Mat3.rotation(sudut))
+      );
+      editableMesh(meshGarisMatahari, [0, 0, 0, 1], model);
+    }
+  }
 
+  // 4. Burung
+  editableMesh(meshBurung, [0, 0, 0, 1], Mat3.translation(913, 87), gl.LINE_STRIP);
+  editableMesh(meshBurung, [0, 0, 0, 1], Mat3.translation(1020, 170), gl.LINE_STRIP);
 
-for (const [x, y] of JendelaPosition) {
-  editableMesh(
-    meshJendelaSOutline,
-    [0, 0, 0, 1],
-    Mat3.translation(x, y),
-    gl.TRIANGLE_FAN
-  );
+  // 5. Gunung, sawah, jalan, rumah, pohon (menutupi matahari yang sedang terbenam)
+  gambarPemandangan();
 
-  editableMesh(
-    meshJendelaS,
-    [0.996, 0.988, 0.792,1],
-    Mat3.translation(x, y),
-    gl.TRIANGLE_FAN
-  );
-}
-
-
-for (const [x, y] of grassPositions) {
-  editableMesh(
-    meshRumputOuter,
-    [0, 0, 0, 1],
-    Mat3.translation(x, y),
-    gl.TRIANGLES
-  );
-
-  editableMesh(
-    meshRumputInner,
-    [0.843, 0.914, 0.706, 1],
-    Mat3.translation(x, y),
-    gl.TRIANGLES
-  );
-}
-drawMesh(meshBatangPohonOutline, [0, 0, 0, 1])
-drawMesh(meshBatangPohon, [0.137, 0.275, 0.094, 1])
-
-for(const [x, y] of leafPositions) {
-  editableMesh(
-    meshdaunPohonOutline,
-    [0, 0, 0, 1],
-    Mat3.translation(x, y),
-    gl.TRIANGLE_FAN
-  )
-}
-
-for(const [x, y] of leafPositions) {
-  editableMesh(
-    meshdaunPohon,
-    [0.42, 0.855, 0.271, 1],
-    Mat3.translation(x, y),
-    gl.TRIANGLE_FAN
-  )
-}
-
-for(const [x, y] of DashPosition) {
-  editableMesh(
-    meshDashJalan,
-    [0,0,0,1],
-    Mat3.translation(x, y),
-    gl.TRIANGLE_FAN
-  )
-}
-
-
-drawMesh(meshBatangLuarOutline, [0, 0, 0, 1])
-drawMesh(meshBatangLuar, [0.137, 0.275, 0.094, 1])
-editableMesh(
-  meshBurung,
-  [0, 0, 0, 1],
-  Mat3.translation(913, 87),
-  gl.LINE_STRIP
-);
-
-editableMesh(
-  meshBurung,
-  [0, 0, 0, 1],
-  Mat3.translation(1020, 170),
-  gl.LINE_STRIP
-);
-
-for (const [x, y, angle] of GarisMatahariData) {
-  // Skala pada sumbu Y memanjangkan sinar dari pangkalnya.
-  const pulseScale = new Float32Array([
-    1, 0, 0,
-    0, rayPulse, 0,
-    0, 0, 1
-  ]);
-  const model = Mat3.multiply(
-    Mat3.translation(x, y + sunOffsetY),
-    Mat3.multiply(
-      Mat3.rotation(angle),
-      pulseScale
-    )
-  );
-
-  editableMesh(
-    meshGarisMatahari,
-    [0, 0, 0, 1],
-    model,
-    gl.TRIANGLE_FAN
-  );
-}
-
+  // 6. Selubung gelap di paling atas: makin malam makin pekat
+  drawMesh(meshGelap, warnaPada(progres, WARNA_GELAP));
 
   requestAnimationFrame(render);
 }
